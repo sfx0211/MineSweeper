@@ -1,0 +1,37 @@
+1、	修改ID_C消息处理,原文件另存为Calculator.asm.0
+2、	删除ID_BACK消息处理中invoke ShowNum之后的;invoke SendMessage,hEdit,WM_SETTEXT,0,addr Output
+3、	删除数字按钮中invoke BtnNum,eax之后的;invoke SendMessage,hEdit,WM_SETTEXT,0,addr Output,因为在BtnNum调用了函数ShowNum
+4、	在ID_POINT消息处理中invoke StrToFloat,addr Output, addr Number添加invoke UnpackNum以支持数字分组，但对于-,123现象尚未处理
+	在fldz前添加finit
+5、	在ID_PER消息处理中fld Number之前添加finit,在invoke StrToFloat,addr Output, addr Number前添加invoke UnpackNum
+6、	在ID_DAO消息处理中invoke StrToFloat,addr Output, addr Number前添加invoke UnpackNum,后添加finit
+7、	在ID_SQRT消息处理中invoke StrToFloat,addr Output, addr Number前添加invoke UnpackNum,后添加finit
+8、	在ID_MC消息处理中fstp Remember前添加fldz
+9、	在ID_MS消息处理中invoke StrToFloat,addr Output, addr Remember前添加invoke UnpackNum
+10、删除以下代码段
+	.elseif eax == ID_STANDARD							;标准型
+		invoke CheckMenuRadioItem, hMenu, ID_STANDARD, ID_SCIENCE,ID_STANDARD,MF_BYCOMMAND ;选中标准型
+	.elseif eax == ID_SCIENCE							;科学型
+		invoke CheckMenuRadioItem, hMenu, ID_STANDARD, ID_SCIENCE,ID_SCIENCE,MF_BYCOMMAND ;选中标准型
+11、将ID_BACK消息处理中
+	.if HasPoint==1
+		mov HasPoint,0
+	.else
+		mov BYTE PTR[esi-2],'.'
+		mov BYTE PTR[esi-1],0
+	.endif
+	改为
+	.if HasPoint==1
+		mov HasPoint,0
+	.else
+		.if BYTE PTR[esi-3]=='-'
+			lea esi,Output
+			mov BYTE PTR[esi],'0'
+			mov BYTE PTR[esi+1],'.'
+			mov BYTE PTR[esi+2],0
+		.else
+			mov BYTE PTR[esi-2],'.'
+			mov BYTE PTR[esi-1],0
+		.endif
+	.endif
+12、
